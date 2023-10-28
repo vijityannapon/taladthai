@@ -80,12 +80,31 @@ export class OrdersService {
     return newOrder;
   }
 
+  async updatePayment(orderId: string, payment: any): Promise<any> {
+    const order = await this.orderModel.findById(orderId);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const newPayment = {
+      status: payment.status,
+      amount: payment.amount,
+      paymentResponse: payment,
+    };
+
+    order.payments.push(newPayment);
+
+    await order.save();
+
+    return order;
+  }
+
   findAll() {
     return `This action returns all orders`;
   }
 
   findOne(id: string) {
-    return `This action returns a #${id} order`;
+    return this.orderModel.findOne({ _id: id });
   }
 
   update(id: string, updateOrderDto: UpdateOrderDto) {
