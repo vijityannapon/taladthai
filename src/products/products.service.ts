@@ -19,7 +19,7 @@ export class ProductsService {
     return this.productModel.find({ deletedAt: null }).exec();
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} product`;
   }
 
