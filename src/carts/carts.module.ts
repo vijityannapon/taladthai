@@ -13,5 +13,6 @@ import { ProductsModule } from './../products/products.module';
   ],
   controllers: [CartsController],
   providers: [CartsService],
+  exports: [MongooseModule.forFeature([{ name: 'Cart', schema: CartSchema }])],
 })
 export class CartsModule {}
