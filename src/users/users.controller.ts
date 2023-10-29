@@ -3,9 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   Put,
   UseGuards,
   Req,
@@ -15,7 +13,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { SignInUserDto } from './dto/sign-in-user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRequest } from './interfaces/jwt-payload.interface';
@@ -51,6 +48,21 @@ export class UsersController {
     };
   }
 
+  @Post('refresh-token')
+  @UseGuards(JwtAuthGuard)
+  async v1RefreshToken(@Req() req: JwtRequest) {
+    const userId = req.user.sub;
+    const user = await this.usersService.findOne(userId);
+    const accessPayload = {
+      type: 'access',
+      sub: user._id,
+    };
+
+    return {
+      accessToken: this.jwtService.sign(accessPayload, { expiresIn: '60m' }),
+    };
+  }
+
   @Put('reset/password')
   @UseGuards(JwtAuthGuard)
   async v1ResetPassword(
@@ -79,23 +91,8 @@ export class UsersController {
     };
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
   }
 }

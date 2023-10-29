@@ -17,7 +17,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from './../users/guards/jwt-auth.guard';
 import { JwtRequest } from './../users/interfaces/jwt-payload.interface';
 import { UsersService } from './../users/users.service';
-import { PaymentsService } from 'src/payments/payments.service';
+import { PaymentsService } from './../payments/payments.service';
 
 @Controller('orders')
 export class OrdersController {
