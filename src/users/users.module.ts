@@ -26,6 +26,9 @@ import { EmailsModule } from './../emails/emails.module';
   ],
   controllers: [UsersController],
   providers: [UsersService, JwtStrategy],
-  exports: [UsersService],
+  exports: [
+    UsersService,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
 })
 export class UsersModule {}

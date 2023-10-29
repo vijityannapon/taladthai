@@ -46,6 +46,10 @@ export class CartsService {
 
     if (!cart) throw new NotFoundException('Cart not found');
 
+    if (cart.userId) {
+      throw new BadRequestException('Cart already belongs to a user');
+    }
+
     if (!updateCartDto.products || !Array.isArray(updateCartDto.products)) {
       throw new BadRequestException('Invalid products data');
     }
