@@ -7,8 +7,11 @@ import {
   Put,
   UseGuards,
   Req,
+  Headers,
   NotFoundException,
   BadRequestException,
+  Patch,
+  Query,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from './users.service';
@@ -17,6 +20,8 @@ import { SignInUserDto } from './dto/sign-in-user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRequest } from './interfaces/jwt-payload.interface';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { RequestResetPasswordDto } from './dto/request-reset-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -63,11 +68,31 @@ export class UsersController {
     };
   }
 
-  @Put('reset/password')
-  @UseGuards(JwtAuthGuard)
+  @Post('reset/password')
+  async v1SendResetLink(
+    @Headers() headers,
+    @Body() requestResetPasswordDto: RequestResetPasswordDto,
+  ) {
+    const { email } = requestResetPasswordDto;
+    const { host } = headers;
+
+    return this.usersService.sendResetPasswordEmail(host, email);
+  }
+
+  @Patch('reset/password')
   async v1ResetPassword(
-    @Req() req: JwtRequest,
+    @Query('token') token: string,
     @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    const { password } = resetPasswordDto;
+    return this.usersService.resetPassword(token, password);
+  }
+
+  @Post('change/password')
+  @UseGuards(JwtAuthGuard)
+  async v1ChangePassword(
+    @Req() req: JwtRequest,
+    @Body() changePasswordDto: ChangePasswordDto,
   ) {
     const userId = req.user.sub;
     const user = await this.usersService.findOne(userId);
@@ -76,7 +101,7 @@ export class UsersController {
       throw new NotFoundException('User not found');
     }
 
-    const { oldPassword, newPassword } = resetPasswordDto;
+    const { oldPassword, newPassword } = changePasswordDto;
 
     if (oldPassword !== user.password) {
       throw new BadRequestException('Old password does not match');

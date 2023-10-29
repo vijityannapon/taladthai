@@ -7,10 +7,12 @@ import { OrderSchema } from './schemas/order.schema';
 import { UsersModule } from './../users/users.module';
 import { ProductsModule } from './../products/products.module';
 import { PaymentsModule } from './../payments/payments.module';
+import { EmailsModule } from './../emails/emails.module';
 
 @Module({
   imports: [
     CartsModule,
+    EmailsModule,
     MongooseModule.forFeature([{ name: 'Order', schema: OrderSchema }]),
     PaymentsModule,
     ProductsModule,

@@ -9,8 +9,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CartDocument } from './../carts/schemas/cart.schema';
 import { OrderDocument } from './schemas/order.schema';
-import { Types } from 'mongoose';
+
 import { Product } from './../products/schemas/product.schema';
+
+import { User } from './../users/schemas/user.schema';
+import { UsersService } from './../users/users.service';
+import { EmailsService } from './../emails/emails.service';
 
 @Injectable()
 export class OrdersService {
@@ -18,6 +22,8 @@ export class OrdersService {
     @InjectModel('Cart') private cartModel: Model<CartDocument>,
     @InjectModel('Product') private productModel: Model<Product>,
     @InjectModel('Order') private orderModel: Model<OrderDocument>,
+    private emailsService: EmailsService,
+    private readonly usersService: UsersService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
@@ -65,7 +71,7 @@ export class OrdersService {
     }
 
     const newOrder = new this.orderModel({
-      cartId,
+      userId: cart.userId,
       products: orderedProducts,
     });
 
@@ -86,6 +92,8 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
+    const user = await this.usersService.findOne(order.userId);
+
     const newPayment = {
       status: payment.status,
       amount: payment.amount,
@@ -95,6 +103,30 @@ export class OrdersService {
     order.payments.push(newPayment);
 
     await order.save();
+    const DateOfPurchase = new Date();
+
+    this.emailsService.sendMail(
+      user.username,
+      'Confirmation of Your Payment at Taladthai online store',
+      `Thank you for shopping with us at Taladthai online store. We are pleased to confirm that we have received your payment for Order #${
+        order._id
+      }. Here are the details:
+
+      Order Number: ${order._id}
+      Total Amount: ${(payment.amount / 100).toFixed(2)}
+      Date: ${DateOfPurchase.toLocaleString()}
+
+
+      Your order will be processed and shipped to the address provided. You can expect delivery by ${DateOfPurchase.toLocaleString()}.
+
+      If you have any questions or concerns about your order, please feel free to reach out to our customer support team at info@taladthai.com or call us at 02-123-4567.
+
+      Thank you for choosing Taladthai online store. We look forward to serving you again soon!
+
+      Warm regards,
+      The Taladthai online store Team
+    `,
+    );
 
     return order;
   }

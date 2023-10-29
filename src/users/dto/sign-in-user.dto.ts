@@ -1,4 +1,12 @@
-import { IsString, Length, IsNotEmpty, IsEmail } from 'class-validator';
+import {
+  IsString,
+  Length,
+  IsNotEmpty,
+  IsEmail,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class SignInUserDto {
   @IsNotEmpty()
@@ -7,6 +15,10 @@ export class SignInUserDto {
 
   @IsNotEmpty()
   @IsString()
-  @Length(6, 12)
+  @MinLength(8)
+  @MaxLength(32)
+  @Matches(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/, {
+    message: 'password too weak',
+  })
   password: string;
 }
