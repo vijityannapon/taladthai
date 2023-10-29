@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      MONGODB_URI:
+      MONGODB_DBNAME:
+      JWT_SECRET:
+      OMISE_PUBLIC_KEY:
+      OMISE_SECRET_KEY:
+      GMAIL_USER:
+      GMAIL_PASSWORD:
+      EMAIL_HOST:
+      EMAIL_PORT:
+      EMAIL_SECURE:
