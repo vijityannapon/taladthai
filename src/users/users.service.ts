@@ -1,8 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import * as uuid from 'uuid';
+import { Request } from 'express';
 
 import {
   ConflictException,
@@ -78,5 +85,71 @@ export class UsersService {
 
   findOne(id: string) {
     return this.userModel.findOne({ _id: id });
+  }
+
+  async sendResetPasswordEmail(host: string, email: string) {
+    const user = await this.userModel.findOne({ username: email });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const resetToken = uuid.v4();
+    const hashedToken = crypto.createHmac('sha256', resetToken).digest('hex');
+    user.passwordResetToken = hashedToken;
+    const saveToken = await user.save();
+
+    const userResponse = saveToken.toObject();
+
+    delete userResponse.password;
+
+    this.emailsService.sendMail(
+      user.username,
+      'Reset your password',
+      `Hello ${user.username},
+
+      We received a request to reset the password for your account associated with this email address.
+
+      If you did not request this change, you can safely ignore this email. No changes will be made.
+
+      To reset your password, click on the link below:
+
+      http://${host}/v1/users/reset-password?token=${hashedToken}
+
+
+      Best regards,
+      Taladthai online store Team
+`,
+    );
+    return userResponse;
+  }
+
+  async resetPassword(token: string, password: string) {
+    if (!token) {
+      throw new NotFoundException('Token not found');
+    }
+
+    const user = await this.userModel.findOne({
+      passwordResetToken: token,
+    });
+
+    if (!user) {
+      throw new NotFoundException('Token not match');
+    }
+
+    try {
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
+      user.password = hashedPassword;
+      user.passwordResetToken = null;
+      await user.save();
+
+      const userResponse = user.toObject();
+
+      delete userResponse.password;
+      return userResponse;
+    } catch (error) {
+      throw new InternalServerErrorException('Error updating password.');
+    }
   }
 }

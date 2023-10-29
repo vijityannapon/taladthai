@@ -1,13 +1,16 @@
 import {
   IsNotEmpty,
   IsString,
-  Length,
-  Matches,
-  MaxLength,
   MinLength,
+  MaxLength,
+  Matches,
 } from 'class-validator';
 
-export class ResetPasswordDto {
+export class ChangePasswordDto {
+  @IsNotEmpty()
+  @IsString()
+  oldPassword: string;
+
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
@@ -15,5 +18,5 @@ export class ResetPasswordDto {
   @Matches(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/, {
     message: 'password too weak',
   })
-  password: string;
+  newPassword: string;
 }
