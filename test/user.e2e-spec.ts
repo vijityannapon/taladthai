@@ -29,7 +29,9 @@ describe('UsersController (e2e)', () => {
         message: [
           'username must be an email',
           'username should not be empty',
-          'password must be longer than or equal to 6 characters',
+          'password too weak',
+          'password must be shorter than or equal to 32 characters',
+          'password must be longer than or equal to 8 characters',
           'password must be a string',
           'password should not be empty',
         ],
@@ -47,7 +49,9 @@ describe('UsersController (e2e)', () => {
         statusCode: 400,
         message: [
           'username must be an email',
-          'password must be longer than or equal to 6 characters',
+          'password too weak',
+          'password must be shorter than or equal to 32 characters',
+          'password must be longer than or equal to 8 characters',
           'password must be a string',
           'password should not be empty',
         ],
@@ -65,7 +69,9 @@ describe('UsersController (e2e)', () => {
       .expect({
         statusCode: 400,
         message: [
-          'password must be longer than or equal to 6 characters',
+          'password too weak',
+          'password must be shorter than or equal to 32 characters',
+          'password must be longer than or equal to 8 characters',
           'password must be a string',
           'password should not be empty',
         ],
@@ -78,7 +84,7 @@ describe('UsersController (e2e)', () => {
       .post('/users/sign-in')
       .send({
         username: 'taladthaiinterview@yopmail.com',
-        password: '555334',
+        password: 'aAaa#aa333aa1ee',
       })
       .expect(201)
       .then((response) => {
